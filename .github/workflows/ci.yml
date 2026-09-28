@@ -1,4 +1,4 @@
-name: XAUUSD Sovereign CI
+name: XAUUSD Sovereign Windows Release
 
 on:
   push:
@@ -13,8 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+  build-windows:
+    runs-on: windows-latest
 
     env:
       TELEGRAM_OPERATIONS_TOKEN: ${{ secrets.TELEGRAM_OPERATIONS_TOKEN }}
@@ -23,36 +23,50 @@ jobs:
       TELEGRAM_GOVERNANCE_CHAT_ID: ${{ secrets.TELEGRAM_GOVERNANCE_CHAT_ID }}
 
     steps:
+
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake ninja-build pkg-config libcurl4-openssl-dev python3
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
 
       - name: Configure
         run: |
-          cmake -S . -B build \
-            -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
+          cmake -S . -B build `
+            -G "Visual Studio 17 2022" `
+            -A x64 `
+            -DCMAKE_BUILD_TYPE=Release `
             -DXAUUSD_BUILD_UI=OFF
 
       - name: Build
         run: |
-          cmake --build build --parallel
+          cmake --build build --config Release --parallel
 
-      - name: Test
+      - name: Run Tests
         run: |
-          ctest --test-dir build --output-on-failure --parallel 2
+          ctest --test-dir build -C Release --output-on-failure
 
-      - name: Upload build artifacts
+      - name: Package Release
+        if: success()
+        shell: powershell
+        run: |
+          mkdir release
+
+          if (Test-Path build\Release) {
+              Copy-Item build\Release\* release\ -Recurse
+          }
+
+          if (Test-Path config) {
+              Copy-Item config release\ -Recurse
+          }
+
+          Compress-Archive `
+            -Path release\* `
+            -DestinationPath XAUUSD-Sovereign-Windows.zip
+
+      - name: Upload Windows Build
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: xauusd-build
-          path: |
-            build/CTestTestfile.cmake
-            build/**/test_*
-            build/**/Phase*IntegrationTests
-          if-no-files-found: warn
+          name: XAUUSD-Sovereign-Windows
+          path: XAUUSD-Sovereign-Windows.zip
