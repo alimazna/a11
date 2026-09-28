@@ -11,11 +11,13 @@ namespace {
 
 std::string trim(std::string value) {
     const auto first = value.find_first_not_of(" \t\r\n");
+
     if (first == std::string::npos) {
         return {};
     }
 
     const auto last = value.find_last_not_of(" \t\r\n");
+
     value = value.substr(first, last - first + 1);
 
     if (value.size() >= 2 &&
@@ -27,10 +29,12 @@ std::string trim(std::string value) {
     return value;
 }
 
+
 std::unordered_map<std::string, std::string> load_local_env() {
     std::unordered_map<std::string, std::string> values;
 
     std::ifstream input("config/telegram.local.env");
+
     if (!input) {
         return values;
     }
@@ -38,6 +42,7 @@ std::unordered_map<std::string, std::string> load_local_env() {
     std::string line;
 
     while (std::getline(input, line)) {
+
         line = trim(line);
 
         if (line.empty() || line.front() == '#') {
@@ -61,27 +66,32 @@ std::unordered_map<std::string, std::string> load_local_env() {
     return values;
 }
 
+
 std::string value(
     const std::unordered_map<std::string, std::string>& local,
-    const char* key) {
-
+    const char* key)
+{
     if (const char* env = std::getenv(key);
         env != nullptr && *env != '\0') {
+
         return env;
     }
 
     const auto it = local.find(key);
 
-    return it == local.end()
-        ? std::string{}
-        : it->second;
+    if (it == local.end()) {
+        return {};
+    }
+
+    return it->second;
 }
+
 
 bool bool_value(
     const std::unordered_map<std::string, std::string>& local,
     const char* key,
-    bool fallback) {
-
+    bool fallback)
+{
     const auto raw = value(local, key);
 
     if (raw.empty()) {
@@ -95,11 +105,12 @@ bool bool_value(
            raw == "on";
 }
 
+
 int int_value(
     const std::unordered_map<std::string, std::string>& local,
     const char* key,
-    int fallback) {
-
+    int fallback)
+{
     const auto raw = value(local, key);
 
     if (raw.empty()) {
@@ -123,13 +134,16 @@ Config load() {
 
     Config config;
 
-    // GitHub Actions secrets / Environment variables
+
+    // Telegram bot tokens
     config.operations.token =
         value(local, "TELEGRAM_OPERATIONS_TOKEN");
 
     config.governance.token =
         value(local, "TELEGRAM_GOVERNANCE_TOKEN");
 
+
+    // Telegram chat IDs
     config.operations.default_chat_id =
         value(local, "TELEGRAM_OPERATIONS_CHAT_ID");
 
@@ -137,12 +151,14 @@ Config load() {
         value(local, "TELEGRAM_GOVERNANCE_CHAT_ID");
 
 
+    // Enable state
     config.operations.enabled =
         bool_value(
             local,
             "TELEGRAM_ENABLE_OPERATIONS",
             !config.operations.token.empty()
         );
+
 
     config.governance.enabled =
         bool_value(
@@ -152,6 +168,7 @@ Config load() {
         );
 
 
+    // General settings
     config.require_authentication =
         bool_value(
             local,
@@ -159,12 +176,14 @@ Config load() {
             true
         );
 
+
     config.max_messages_per_minute =
         int_value(
             local,
             "TELEGRAM_MAX_MESSAGES_PER_MINUTE",
             30
         );
+
 
     config.send_timeout_ms =
         int_value(
