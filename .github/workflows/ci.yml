@@ -12,6 +12,7 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+
 jobs:
   build-windows:
 
@@ -23,10 +24,17 @@ jobs:
       TELEGRAM_OPERATIONS_CHAT_ID: ${{ secrets.TELEGRAM_OPERATIONS_CHAT_ID }}
       TELEGRAM_GOVERNANCE_CHAT_ID: ${{ secrets.TELEGRAM_GOVERNANCE_CHAT_ID }}
 
+
     steps:
 
       - name: Checkout
         uses: actions/checkout@v4
+
+
+      - name: Install CURL dependency
+        shell: powershell
+        run: |
+          vcpkg install curl:x64-windows
 
 
       - name: Setup CMake
@@ -34,18 +42,22 @@ jobs:
 
 
       - name: Configure
+        shell: powershell
         run: |
           cmake -S . -B build `
             -DCMAKE_BUILD_TYPE=Release `
-            -DXAUUSD_BUILD_UI=OFF
+            -DXAUUSD_BUILD_UI=OFF `
+            -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
 
 
       - name: Build
+        shell: powershell
         run: |
           cmake --build build --config Release --parallel
 
 
       - name: Run Tests
+        shell: powershell
         run: |
           ctest --test-dir build -C Release --output-on-failure
 
@@ -54,19 +66,26 @@ jobs:
         if: success()
         shell: powershell
         run: |
-          mkdir release
+
+          New-Item -ItemType Directory -Force -Path release
 
           if (Test-Path build\Release) {
-              Copy-Item build\Release\* release\ -Recurse
+              Copy-Item build\Release\* release\ -Recurse -Force
+          }
+
+          if (Test-Path build\bin) {
+              Copy-Item build\bin\* release\ -Recurse -Force
           }
 
           if (Test-Path config) {
-              Copy-Item config release\ -Recurse
+              Copy-Item config release\ -Recurse -Force
           }
+
 
           Compress-Archive `
             -Path release\* `
-            -DestinationPath XAUUSD-Sovereign-Windows.zip
+            -DestinationPath XAUUSD-Sovereign-Windows.zip `
+            -Force
 
 
       - name: Upload Windows Build
