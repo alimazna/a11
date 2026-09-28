@@ -16,9 +16,15 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    env:
+      TELEGRAM_OPERATIONS_TOKEN: ${{ secrets.TELEGRAM_OPERATIONS_TOKEN }}
+      TELEGRAM_GOVERNANCE_TOKEN: ${{ secrets.TELEGRAM_GOVERNANCE_TOKEN }}
+      TELEGRAM_OPERATIONS_CHAT_ID: ${{ secrets.TELEGRAM_OPERATIONS_CHAT_ID }}
+      TELEGRAM_GOVERNANCE_CHAT_ID: ${{ secrets.TELEGRAM_GOVERNANCE_CHAT_ID }}
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
@@ -33,14 +39,16 @@ jobs:
             -DXAUUSD_BUILD_UI=OFF
 
       - name: Build
-        run: cmake --build build --parallel
+        run: |
+          cmake --build build --parallel
 
       - name: Test
-        run: ctest --test-dir build --output-on-failure --parallel 2
+        run: |
+          ctest --test-dir build --output-on-failure --parallel 2
 
       - name: Upload build artifacts
         if: success()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: xauusd-build
           path: |
