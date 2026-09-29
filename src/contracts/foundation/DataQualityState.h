@@ -4,7 +4,8 @@
 
 namespace xauusd::sovereign {
 
-enum class DataQualityState : std::uint8_t {
+enum class DataQualityState : std::uint8_t
+{
     VALID,
     DEGRADED,
     INVALID,
@@ -16,4 +17,4 @@ enum class DataQualityState : std::uint8_t {
     INCOMPLETE
 };
 
-} // namespace xauusd::sovereign
+}

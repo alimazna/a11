@@ -4,7 +4,8 @@
 
 namespace xauusd::sovereign {
 
-enum class ValidationOutcome : std::uint8_t {
+enum class ValidationOutcome : std::uint8_t
+{
     ACCEPTED,
     REJECTED,
     QUARANTINED,
@@ -12,4 +13,4 @@ enum class ValidationOutcome : std::uint8_t {
     UNKNOWN
 };
 
-} // namespace xauusd::sovereign
+}

@@ -4,7 +4,8 @@
 
 namespace xauusd::sovereign {
 
-enum class ServiceState : std::uint8_t {
+enum class ServiceState : std::uint8_t
+{
     STARTING,
     ONLINE,
     DEGRADED,
@@ -15,4 +16,4 @@ enum class ServiceState : std::uint8_t {
     ERROR
 };
 
-} // namespace xauusd::sovereign
+}
