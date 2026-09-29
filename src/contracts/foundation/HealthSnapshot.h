@@ -21,13 +21,13 @@ struct HealthSnapshot
     HealthSnapshot(
         const EntityId& id,
         ServiceState state,
-        FreshnessState freshness_value,
+        FreshnessState freshness_state,
         const Timestamp& observed,
         const Version& policy)
         :
         service_id(id),
         service_state(state),
-        freshness(freshness_value),
+        freshness(freshness_state),
         observed_at(observed),
         policy_version(policy)
     {}

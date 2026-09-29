@@ -22,12 +22,12 @@ struct DataValidationResult
         ValidationOutcome outcome_value,
         DataQualityState quality_value,
         std::string reason_value,
-        Timestamp timestamp_value)
+        Timestamp timestamp)
         :
         outcome(outcome_value),
         quality(quality_value),
         reason(std::move(reason_value)),
-        observed_at(timestamp_value)
+        observed_at(timestamp)
     {}
 };
 
